@@ -1,0 +1,36 @@
+package xsd2jsonschema.jsonschema
+
+internal class Constants {
+    companion object {
+        const val COMMENT = "\$comment"
+        const val DECIMALCOMMENT = "XML datatype was xs:decimal"
+        const val TOTALDIGITSCOMMENT = "XML specified totalDigits="
+        const val FRACTIONDIGITSCOMMENT = "XML specified fractionDigits="
+        const val MINOCCURS = "minOccurs"
+        const val MAXOCCURS = "maxOccurs"
+        const val UNBOUNDED = "unbounded"
+        const val PROPERTIES = "properties"
+        const val ONEOF = "oneOf"
+        const val MINITEMS = "minItems"
+        const val MAXITEMS =  "maxItems"
+        const val ITEMS = "items"
+        const val ARRAY = "array"
+        const val REQUIRED = "required"
+        const val ALLOF = "allOf"
+        const val STRINGS = "Strings : "
+        const val SCHEMASTRING = "\$schema"
+        const val SCHEMAURL = "http://json-schema.org/draft-04/schema#"
+        const val ID = "id"
+        const val COMPLEXTYPESTRING = "complexType"
+        const val CHOICESTRING = "choice"
+        const val SIMPLECONTENTSTRING = "simpleContent"
+        const val EXTENSIONSTRING = "extension"
+        const val ATTRIBUTESTRING = "attribute"
+        const val SEQUENCESTRING = "sequence"
+        const val ELEMENTSTRING = "element"
+        const val OBJECTSTRING = "object"
+        const val ATSTRING = "@"
+        const val HASHNAMESTRING = "#name"
+        const val USE = "use"
+    }
+}
