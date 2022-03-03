@@ -12,7 +12,7 @@ internal class Constants {
         const val PROPERTIES = "properties"
         const val ONEOF = "oneOf"
         const val MINITEMS = "minItems"
-        const val MAXITEMS =  "maxItems"
+        const val MAXITEMS = "maxItems"
         const val ITEMS = "items"
         const val ARRAY = "array"
         const val REQUIRED = "required"

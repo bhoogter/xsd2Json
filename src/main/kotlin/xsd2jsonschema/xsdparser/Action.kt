@@ -9,7 +9,7 @@ internal abstract class Action(val tracker: Tracker) {
 internal class StartSchema(tracker: Tracker, val addNewSchema: (schema: Schema) -> Unit) : Action(tracker) {
     public override fun perform(line: Line) {
         val targetNS = line.attrs
-            .first { attr -> attr.localpart.equals(TARGETNAMESPACE.name, true) }
+                .first { attr -> attr.localpart.equals(TARGETNAMESPACE.name, true) }
         addNewSchema(Schema(line, targetNS.value))
     }
 }

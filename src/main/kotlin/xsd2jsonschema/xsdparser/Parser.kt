@@ -1,16 +1,15 @@
 package xsd2jsonschema.xsdparser
 
-import javax.xml.stream.events.XMLEvent
-
-import javax.xml.stream.XMLStreamConstants.*
 import xsd2jsonschema.xsdparser.Type.*
 import java.util.*
+import javax.xml.stream.XMLStreamConstants.*
 import javax.xml.stream.events.Attribute
+import javax.xml.stream.events.XMLEvent
 
 internal class Parser {
 
-    private val tracker = Tracker();
-    val schemas = ArrayList<Schema>();
+    private val tracker = Tracker()
+    val schemas = ArrayList<Schema>()
     private var optionalSchema = Optional.empty<Schema>()
     private var optionalData = Optional.empty<TypeLines>()
     private val startMap = mapOf(
@@ -67,7 +66,7 @@ internal class Parser {
         val line = Line(
                 event.asStartElement().name.localPart,
                 event.asStartElement().name.namespaceURI
-            )
+        )
 
         line.attrs.addAll(
                 event.asStartElement().attributes.asSequence().filterIsInstance<Attribute>().map { attr ->
@@ -75,7 +74,8 @@ internal class Parser {
                             attr.name.localPart,
                             attr.name.namespaceURI,
                             attr.name.prefix,
-                            attr.value )}
+                            attr.value)
+                }
         )
         return line
     }
@@ -93,7 +93,7 @@ internal class Parser {
         optionalSchema.ifPresent { schema -> schema.lines.add(newTypeLines) }
     }
 
-    private fun newSchema(newSchema: Schema){
+    private fun newSchema(newSchema: Schema) {
         schemas.add(newSchema)
         optionalSchema = Optional.of(newSchema)
     }

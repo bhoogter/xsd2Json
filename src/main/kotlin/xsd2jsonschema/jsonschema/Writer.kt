@@ -34,10 +34,6 @@ import xsd2jsonschema.jsonschema.Constants.Companion.STRINGS
 import xsd2jsonschema.jsonschema.Constants.Companion.TOTALDIGITSCOMMENT
 import xsd2jsonschema.jsonschema.Constants.Companion.UNBOUNDED
 import xsd2jsonschema.jsonschema.Constants.Companion.USE
-
-import java.util.HashSet
-import java.util.Optional
-
 import xsd2jsonschema.jsonschema.Keys.Companion.BASE_64_BINARY
 import xsd2jsonschema.jsonschema.Keys.Companion.BOOLEAN
 import xsd2jsonschema.jsonschema.Keys.Companion.DATE_TIME
@@ -61,10 +57,15 @@ import xsd2jsonschema.jsonschema.Keys.Companion.SIMPLE
 import xsd2jsonschema.jsonschema.Keys.Companion.STRING
 import xsd2jsonschema.jsonschema.Keys.Companion.TOTALDIGITS
 import xsd2jsonschema.jsonschema.Keys.Companion.TYPE
-import xsd2jsonschema.xsdparser.*
+import xsd2jsonschema.xsdparser.Attr
+import xsd2jsonschema.xsdparser.Line
+import xsd2jsonschema.xsdparser.Schema
 import xsd2jsonschema.xsdparser.Type.*
+import xsd2jsonschema.xsdparser.TypeLines
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
+
 class Writer {
 
     private var strings: MutableSet<String> = HashSet()
@@ -105,21 +106,21 @@ class Writer {
 
     private fun createElement(allOfDataObject: JSONObject, linesData: Optional<MutableList<Line>>) {
         linesData
-            .filter { lines -> lines.isNotEmpty() }
-            .map { lines -> lines[0] }
-            .map { line -> line.attrs }
-            .filter { attrs -> attrs.isNotEmpty() }
-            .ifPresent { attrs ->
-                attrs
-                .stream()
-                .filter { attr ->
-                    StringUtils.isNotBlank(attr.localpart) &&
-                            StringUtils.isNotBlank(attr.value) &&
-                            attr.localpart.equals(TYPE, ignoreCase = true)
+                .filter { lines -> lines.isNotEmpty() }
+                .map { lines -> lines[0] }
+                .map { line -> line.attrs }
+                .filter { attrs -> attrs.isNotEmpty() }
+                .ifPresent { attrs ->
+                    attrs
+                            .stream()
+                            .filter { attr ->
+                                StringUtils.isNotBlank(attr.localpart) &&
+                                        StringUtils.isNotBlank(attr.value) &&
+                                        attr.localpart.equals(TYPE, ignoreCase = true)
+                            }
+                            .findAny()
+                            .ifPresent { attr -> allOfDataObject.put(REF, DEFINITIONS + attr.value) }
                 }
-                .findAny()
-                .ifPresent { attr -> allOfDataObject.put(REF, DEFINITIONS + attr.value) }
-            }
     }
 
     private fun createSimpleType(definitionsData: JSONObject, lines: List<Line>) {
@@ -132,8 +133,6 @@ class Writer {
     }
 
 
-
-
     private fun createComplexTypeWrapper(definitionsData: JSONObject, lines: List<Line>) {
         val complexObject = JSONObject()
         lines.forEach { line ->
@@ -141,7 +140,7 @@ class Writer {
             strings.add(name)
             when (name) {
                 COMPLEXTYPESTRING -> createComplexType(line, definitionsData, complexObject)
-                CHOICESTRING ->  createChoice(complexObject)
+                CHOICESTRING -> createChoice(complexObject)
                 SIMPLECONTENTSTRING -> createJSONObject(complexObject)
                 EXTENSIONSTRING -> createExtension(line, definitionsData, complexObject)
                 ATTRIBUTESTRING -> createAttribute(line, complexObject)
@@ -156,20 +155,34 @@ class Writer {
         line.attrs.forEach { attr -> createAttrElement(attr, complexElement) }
         when {
             complexObject.has(ONEOF) -> createOneOf(complexObject, complexElement)
-            else -> { createSequenceType(complexElement, complexObject) }
+            else -> {
+                createSequenceType(complexElement, complexObject)
+            }
         }
     }
 
     private fun createSequenceType(complexElement: ComplexElement, complexObject: JSONObject) {
-        when {complexElement.minimum >= 1 -> { createRequired(complexObject, complexElement)}}
         when {
-            complexElement.maximum > 1 || complexElement.minimum > 1 -> { createArray(complexElement, complexObject) }
-            else -> { createProperties(complexObject, complexElement) }
+            complexElement.minimum >= 1 -> {
+                createRequired(complexObject, complexElement)
+            }
+        }
+        when {
+            complexElement.maximum > 1 || complexElement.minimum > 1 -> {
+                createArray(complexElement, complexObject)
+            }
+            else -> {
+                createProperties(complexObject, complexElement)
+            }
         }
     }
 
     private fun createRequired(complexObject: JSONObject, complexElement: ComplexElement) {
-        when {!complexObject.has(REQUIRED) -> { complexObject.put(REQUIRED, JSONArray())}}
+        when {
+            !complexObject.has(REQUIRED) -> {
+                complexObject.put(REQUIRED, JSONArray())
+            }
+        }
         complexObject.getJSONArray(REQUIRED).put(complexElement.name)
     }
 
@@ -202,8 +215,10 @@ class Writer {
             MINOCCURS -> complexElement.minimum = Integer.valueOf(value)
             NAME -> complexElement.name = value
             MAXOCCURS ->
-                when {value.equals(UNBOUNDED, ignoreCase = true) -> complexElement.maximum = 999
-                    else -> complexElement.maximum = Integer.valueOf(value)}
+                when {
+                    value.equals(UNBOUNDED, ignoreCase = true) -> complexElement.maximum = 999
+                    else -> complexElement.maximum = Integer.valueOf(value)
+                }
             TYPE -> complexElement.type = value
         }
     }
@@ -221,7 +236,6 @@ class Writer {
     }
 
 
-
     private fun createExtension(line: Line, definitionsData: JSONObject, complexObject: JSONObject) {
         line.attrs
                 .filter { attr -> attr.localpart.equals("base", ignoreCase = true) && definitionsData.has(attr.value) }
@@ -234,7 +248,6 @@ class Writer {
     }
 
 
-
     private fun createAttribute(line: Line, complexObject: JSONObject) {
         val attribute = readAttribute(line)
         complexObject.getJSONObject(PROPERTIES).put(ATSTRING + attribute.name!!, DEFINITIONS + attribute.type!!)
@@ -244,7 +257,6 @@ class Writer {
             }
         }
     }
-
 
 
     private fun readAttribute(line: Line): ComplexAttribute {
@@ -306,7 +318,8 @@ class Writer {
     }
 
     private fun addComment(simpleObject: JSONObject, s: String) {
-        when {simpleObject.has(COMMENT) -> simpleObject.put(COMMENT, simpleObject.getString(COMMENT) + " , $s")
+        when {
+            simpleObject.has(COMMENT) -> simpleObject.put(COMMENT, simpleObject.getString(COMMENT) + " , $s")
             else -> simpleObject.put(COMMENT, s)
         }
     }

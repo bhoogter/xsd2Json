@@ -7,31 +7,31 @@ import mu.KotlinLogging
 import xsd2jsonschema.jsonschema.Writer
 import xsd2jsonschema.xsdparser.Parser
 import xsd2jsonschema.xsdparser.Schema
-
-import javax.xml.stream.XMLInputFactory
-import javax.xml.stream.XMLStreamException
-import javax.xml.stream.events.XMLEvent
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileReader
+import javax.xml.stream.XMLInputFactory
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.events.XMLEvent
 
 private val logger = KotlinLogging.logger {}
+
 class Library {
 
     @Throws(FileNotFoundException::class, XMLStreamException::class)
-    fun generateFromSchema(file: File) : String {
+    fun generateFromSchema(file: File): String {
         val factory = XMLInputFactory.newInstance()
         return parseAsReader(file, factory)
     }
 
     @Throws(XMLStreamException::class, FileNotFoundException::class)
-    private fun parseAsReader(file: File, factory: XMLInputFactory) : String {
+    private fun parseAsReader(file: File, factory: XMLInputFactory): String {
         val schemas = parseXSD(file, factory)
         logger.info("Schema : $schemas")
         return writeJSONSchema(schemas)
     }
 
-    private fun writeJSONSchema(schemas: List<Schema>) : String {
+    private fun writeJSONSchema(schemas: List<Schema>): String {
         return Writer().getJSONSchema(schemas).toString(4)
     }
 
@@ -42,7 +42,7 @@ class Library {
         xmlEventReader
                 .asSequence()
                 .filterIsInstance<XMLEvent>()
-                .forEach {event -> parser.parseEvent(event)}
+                .forEach { event -> parser.parseEvent(event) }
         xmlEventReader.close()
         return parser.schemas
     }

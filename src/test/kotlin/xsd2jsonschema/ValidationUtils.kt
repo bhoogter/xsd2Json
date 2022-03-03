@@ -11,7 +11,6 @@ import java.io.File
 import java.io.IOException
 import java.net.URL
 
-
 object ValidationUtils {
 
     val JSON_V4_SCHEMA_IDENTIFIER = "http://json-schema.org/draft-04/schema#"
